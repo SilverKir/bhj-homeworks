@@ -47,9 +47,21 @@ const addProductInBasket = (id, quantity) => {
 }
 
 /**
+ * Заполняем сохраненнуб корзину
+ */
+const setInitialData = () => {
+    for (var i = 0; i < localStorage.length; i++) {
+        addProductInBasket(localStorage.key(i), localStorage.getItem(localStorage.key(i)));
+    }
+};
+
+setInitialData();
+
+/**
  * Работа с карточкой продукта
  */
 const products = document.querySelectorAll('.product');
+
 products.forEach(element => {
     const button = element.querySelector('.product__add');
     const productQuantity = element.querySelector('.product__quantity-value');
@@ -87,6 +99,19 @@ products.forEach(element => {
             productQuantity.innerText = quantity;
         })
 
+    });
+
+});
+
+/**
+ * Занесение в память
+ */
+window.addEventListener('beforeunload', () => {
+    localStorage.clear();
+    const products = document.querySelectorAll(".cart__product");
+    products.forEach(element => {
+        const id = element.getAttribute('data-id')
+        localStorage.setItem(id, getQuantityInBasket(id));
     });
 
 });
