@@ -22,41 +22,56 @@ const insertData = (value) => {
  */
 
 const setInitialData = () => {
-    for (var i = 0; i < localStorage.length; i++) {
-        insertData(localStorage.getItem(localStorage.key(i)));
+    let initialData = JSON.parse(localStorage.getItem("todoList"));
+    if (initialData) {
+        for (let i = initialData.length - 1; i >= 0; i--) {
+            insertData(initialData[i]);
+        }
     }
 };
 
 /**
- * Функция добавления события
- * @param {*} element - элемент на котором слушается событие
+ * Функция обновления удаления записей
+ * @param {*} element - новый элемент удаления записей
  */
 
-const updateEventListener = (element) => {
+const updateRemoverEvent = (element) => {
     element.addEventListener('click', (event) => {
         event.preventDefault();
-        const task = element.parentElement;
-        const taskText = element.previousElementSibling.textContent.trim();
-        localStorage.removeItem(taskText);
-        task.remove();
+        element.parentElement.remove();
     })
 };
 
-
+//localStorage.clear();
 setInitialData();
-// localStorage.clear();
+
 
 form.addEventListener('submit', (event) => {
     event.preventDefault();
-    insertData(taskInput.value);
-    localStorage.setItem(taskInput.value, taskInput.value);
+    const inputValue = taskInput.value.trim();
+    if (inputValue) {
+        insertData(inputValue);
+        const newRemover = document.querySelector('.task__remove');
+        updateRemoverEvent(newRemover);
+    }
     form.reset();
-    const newRemover = document.querySelector('.task__remove');
-    updateEventListener(newRemover);
+
 });
 
 
 const taskRemove = document.querySelectorAll('.task__remove');
-taskRemove.forEach(element => updateEventListener(element));
+taskRemove.forEach(element => updateRemoverEvent(element));
 
+
+/**
+ * Занесение в память список задач
+ */
+window.addEventListener('beforeunload', () => {
+    const products = document.querySelectorAll(".task__title");
+    let taskList = [];
+    products.forEach(element => {
+        taskList.push(element.textContent.trim())
+    });
+    localStorage.setItem("todoList", JSON.stringify(taskList));
+});
 

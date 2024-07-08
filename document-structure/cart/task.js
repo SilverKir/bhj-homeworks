@@ -8,6 +8,10 @@ function getQuantityInBasket(id) {
     return products ? parseInt(products.querySelector('.cart__product-count').innerText) : null;
 }
 
+const animation=(id,count,timeout)=>{
+    
+}
+
 /**
  * Изменяем количество продукта в корзине
  * если количество продукта равно 0 , то продукт из корзины удаляется
