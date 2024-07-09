@@ -8,9 +8,64 @@ function getQuantityInBasket(id) {
     return products ? parseInt(products.querySelector('.cart__product-count').innerText) : null;
 }
 
-const animation=(id,count,timeout)=>{
-    
+/**
+ * Анимация, в зависимости от наличия товара в корзине меняется место прилета,
+ * в зависимости отрицательного или положительного изменения количества товара,
+ * меняется направление полета 
+ * @param {*} id индекс товара
+ * @param {*} quantity количество выбранного товара
+ */
+const setAnimation = (id, quantity) => {
+    const quantityInBasket = getQuantityInBasket(id);
+    const count = 20;
+    const timeout = 50;
+    const element = document.querySelector(`.product[data-id="${id}"]`);
+    const image = element.querySelector('.product__image');
+    const product = quantityInBasket ? document.querySelector(`.cart__product[data-id="${id}"]`) : document.querySelector(`.cart__product`)
+    const startPosition = image.getBoundingClientRect();
+    const endPosition = product.querySelector('.cart__product-image').getBoundingClientRect();
+
+    let leftDelta = quantityInBasket ? (endPosition.left - startPosition.left) / count : (endPosition.left * 2 - endPosition.right - startPosition.left) / count;
+    let topDelta = (endPosition.top - startPosition.top) / count;
+    let currentLeft = quantity > 0 ? startPosition.left : endPosition.left;
+    let currentTop = quantity > 0 ? startPosition.top : endPosition.top;
+    let index = 1;
+    let clone = image.cloneNode();
+    element.appendChild(clone)
+    clone.style.position = 'absolute';
+    clone.style.left = currentLeft + "px";
+    clone.style.top = currentTop + "px";
+
+    const startAnimation = () => {
+        if (quantity > 0) {
+            currentLeft += leftDelta;
+            currentTop += topDelta;
+        } else {
+            currentLeft -= leftDelta;
+            currentTop -= topDelta;
+        }
+
+        clone.style.left = currentLeft + "px";
+        clone.style.top = currentTop + "px";
+        index++;
+
+        if (index > count) {
+            clearInterval(timeInterval);
+            clone.remove();
+            if (quantity > 0) {
+                addProductInBasket(id, quantity);
+            }
+        }
+
+    }
+
+    let timeInterval = setInterval(startAnimation, timeout)
+
+    if (quantity < 0) {
+        addProductInBasket(id, quantity)
+    };
 }
+
 
 /**
  * Изменяем количество продукта в корзине
@@ -51,11 +106,12 @@ const addProductInBasket = (id, quantity) => {
 }
 
 /**
- * Заполняем сохраненнуб корзину
+ * Заполняем сохраненну корзину
  */
 const setInitialData = () => {
-    for (var i = 0; i < localStorage.length; i++) {
-        addProductInBasket(localStorage.key(i), localStorage.getItem(localStorage.key(i)));
+    let productBasket = JSON.parse(localStorage.getItem("productBasket"));
+    for (let key in productBasket) {
+        addProductInBasket(parseInt(key), parseInt(productBasket[key]));
     }
 };
 
@@ -74,13 +130,10 @@ products.forEach(element => {
     const id = element.getAttribute('data-id');
 
     button.addEventListener('click', () => {
-
-        if (quantity != 0) {
-            addProductInBasket(id, quantity)
-            quantity = 1;
-            productQuantity.innerText = 1;
-        }
-
+        setAnimation(id, quantity);
+        quantity = 1;
+        productQuantity.innerText = 1;
+        button.innerText = "Добавить в корзину";
     })
 
     quantityControl.forEach(elem => {
@@ -90,8 +143,14 @@ products.forEach(element => {
             if (elem.classList.contains('product__quantity-control_dec')) {
                 if (basketQuantity > Math.abs(quantity) && quantity <= 0 || quantity > 0)
                     quantity--;
+                if (quantity === 0) {
+                    quantity = !basketQuantity ? 1 : --quantity;
+                }
+
             } else {
                 quantity++;
+                if (quantity === 0)
+                    quantity++;
             };
 
             if (quantity < 0) {
@@ -111,11 +170,13 @@ products.forEach(element => {
  * Занесение в память
  */
 window.addEventListener('beforeunload', () => {
-    localStorage.clear();
+
     const products = document.querySelectorAll(".cart__product");
+    let productBasket = {};
     products.forEach(element => {
         const id = element.getAttribute('data-id')
-        localStorage.setItem(id, getQuantityInBasket(id));
+        productBasket[id] = getQuantityInBasket(id);
     });
+    localStorage.setItem("productBasket", JSON.stringify(productBasket));
 
 });
