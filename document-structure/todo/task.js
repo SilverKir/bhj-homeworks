@@ -62,16 +62,12 @@ form.addEventListener('submit', (event) => {
 const taskRemove = document.querySelectorAll('.task__remove');
 taskRemove.forEach(element => updateRemoverEvent(element));
 
-
 /**
  * Занесение в память список задач
  */
 window.addEventListener('beforeunload', () => {
     const products = document.querySelectorAll(".task__title");
-    let taskList = [];
-    products.forEach(element => {
-        taskList.push(element.textContent.trim())
-    });
+    let taskList = [...products].map((element) => { return element.textContent.trim() });
     localStorage.setItem("todoList", JSON.stringify(taskList));
 });
 

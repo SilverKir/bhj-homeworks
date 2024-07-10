@@ -23,9 +23,12 @@ const setAnimation = (id, quantity) => {
     const image = element.querySelector('.product__image');
     const product = quantityInBasket ? document.querySelector(`.cart__product[data-id="${id}"]`) : document.querySelector(`.cart__product`)
     const startPosition = image.getBoundingClientRect();
-    const endPosition = product.querySelector('.cart__product-image').getBoundingClientRect();
+    const endPosition = document.querySelector(`.cart__product`) ? product.querySelector('.cart__product-image').getBoundingClientRect() : document.querySelector(`.cart`).getBoundingClientRect();
 
     let leftDelta = quantityInBasket ? (endPosition.left - startPosition.left) / count : (endPosition.left * 2 - endPosition.right - startPosition.left) / count;
+    if (!document.querySelector(`.cart__product`)) {
+        leftDelta = (window.innerWidth / 2) / count;
+    }
     let topDelta = (endPosition.top - startPosition.top) / count;
     let currentLeft = quantity > 0 ? startPosition.left : endPosition.left;
     let currentTop = quantity > 0 ? startPosition.top : endPosition.top;
